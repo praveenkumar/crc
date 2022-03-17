@@ -17,29 +17,40 @@ import (
 )
 
 const (
-	plistTemplate = `<?xml version='1.0' encoding='UTF-8'?>
-	<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-	<plist version='1.0'>
+	daemonPlistTemplate = `<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version='1.0'>
+<dict>
+	<key>Label</key>
+	<string>{{ .Label }}</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>{{ .ExecutablePath }}</string>
+	{{ range .Args }}
+		<string>{{ . }}</string>
+	{{ end }}
+	</array>
+	<key>StandardOutPath</key>
+	<string>{{ .StdOutFilePath }}</string>
+	<key>StandardErrorPath</key>
+	<string>{{ .StdErrFilePath }}</string>
+	<key>Sockets</key>
+	<dict>
+		<key>Listeners</key>
 		<dict>
-			<key>Label</key>
-			<string>{{ .Label }}</string>
-			<key>ProgramArguments</key>
-			<array>
-				<string>{{ .ExecutablePath }}</string>
-			{{ range .Args }}
-				<string>{{ . }}</string>
-			{{ end }}
-			</array>
-			<key>StandardOutPath</key>
-			<string>{{ .StdOutFilePath }}</string>
-			<key>Disabled</key>
-			<false/>
-			<key>RunAtLoad</key>
-			<true/>
-			<key>ProcessType</key>
-			<string>Interactive</string>
+			<key>SockFamily</key>
+			<string>Unix</string>
+			<key>SockPathName</key>
+			<string>{{ .SocketPath }}</string>
+			<key>SockPathMode</key>
+			<integer>493</integer>
+			<key>SockType</key>
+			<string>stream</string>
 		</dict>
-	</plist>`
+	</dict>
+</dict>
+</plist>
+`
 )
 
 // AgentConfig is struct to contain configuration for agent plist file
@@ -47,6 +58,8 @@ type AgentConfig struct {
 	Label          string
 	ExecutablePath string
 	StdOutFilePath string
+	StdErrFilePath string
+	SocketPath     string
 	Args           []string
 }
 
@@ -66,7 +79,7 @@ func getPlistPath(label string) string {
 
 func generatePlistContent(config AgentConfig) ([]byte, error) {
 	var plistContent bytes.Buffer
-	t, err := template.New("plist").Parse(plistTemplate)
+	t, err := template.New("plist").Parse(daemonPlistTemplate)
 	if err != nil {
 		return nil, err
 	}

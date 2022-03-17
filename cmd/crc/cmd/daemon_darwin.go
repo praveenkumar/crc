@@ -6,7 +6,7 @@ import (
 
 	"github.com/code-ready/crc/pkg/crc/constants"
 	"github.com/code-ready/crc/pkg/crc/logging"
-	crcversion "github.com/code-ready/crc/pkg/crc/version"
+	"github.com/code-ready/crc/pkg/os/launchd"
 )
 
 func vsockListener() (net.Listener, error) {
@@ -30,13 +30,20 @@ func httpListener() (net.Listener, error) {
 }
 
 func checkIfDaemonIsRunning() (bool, error) {
+	if launchd.PlistExists(constants.DaemonAgentLabel) {
+		/* detect if the daemon is being started by launchd,
+		* and socket activation is in use. In this scenario,
+		* trying to send an HTTP version check on the daemon
+		* HTTP socket would hang as the socket is listening for
+		* connections but is not setup to handle them yet.
+		 */
+		return false, nil
+	}
+
 	return checkDaemonVersion()
 }
 
 func daemonNotRunningMessage() string {
-	if crcversion.IsInstaller() {
-		return "Is '/Applications/CodeReady Containers.app' running? Cannot reach daemon API"
-	}
 	return genericDaemonNotRunningMessage
 }
 

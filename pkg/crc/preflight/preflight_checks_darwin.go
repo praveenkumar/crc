@@ -15,6 +15,7 @@ import (
 	"github.com/code-ready/crc/pkg/crc/network"
 	"github.com/code-ready/crc/pkg/crc/version"
 	crcos "github.com/code-ready/crc/pkg/os"
+	"github.com/code-ready/crc/pkg/os/launchd"
 	"github.com/klauspost/cpuid/v2"
 	"golang.org/x/sys/unix"
 )
@@ -239,6 +240,71 @@ func stopCRCHyperkitProcess() error {
 	}
 	if _, _, err := crcos.RunWithDefaultLocale(pkillPath, "-SIGKILL", "-f", filepath.Join(constants.BinDir(), "hyperkit")); err != nil {
 		return fmt.Errorf("Failed to kill 'hyperkit' process. %w", err)
+	}
+	return nil
+}
+
+func getDaemonConfig() (*launchd.AgentConfig, error) {
+	stdOutAndErrFilePath := filepath.Join(constants.CrcBaseDir, ".launchd-crcd.log")
+
+	daemonConfig := launchd.AgentConfig{
+		Label:          constants.DaemonAgentLabel,
+		ExecutablePath: constants.CrcSymlinkPath,
+		StdOutFilePath: stdOutAndErrFilePath,
+		StdErrFilePath: stdOutAndErrFilePath,
+		SocketPath:     constants.DaemonHTTPSocketPath,
+		Args:           []string{"daemon", "--log-level=debug"},
+	}
+
+	return &daemonConfig, nil
+}
+
+func checkIfDaemonPlistFileExists() error {
+	daemonConfig, err := getDaemonConfig()
+	if err != nil {
+		return err
+	}
+	// If plist file content match with available plist file
+	if err := launchd.CheckPlist(*daemonConfig); err != nil {
+		return err
+	}
+	// If agent is running
+	if !launchd.AgentRunning(daemonConfig.Label) {
+		return fmt.Errorf("agent for %s label not running", daemonConfig.Label)
+	}
+	return nil
+}
+
+func fixDaemonPlistFileExists() error {
+	daemonConfig, err := getDaemonConfig()
+	if err != nil {
+		return err
+	}
+	return fixPlistFileExists(*daemonConfig)
+}
+
+func removeDaemonPlistFile() error {
+	if err := launchd.UnloadPlist(constants.DaemonAgentLabel); err != nil {
+		return err
+	}
+	return launchd.RemovePlist(constants.DaemonAgentLabel)
+}
+
+func fixPlistFileExists(agentConfig launchd.AgentConfig) error {
+	logging.Debugf("Creating plist for %s", agentConfig.Label)
+	err := launchd.CreatePlist(agentConfig)
+	if err != nil {
+		return err
+	}
+	// load plist
+	if err := launchd.LoadPlist(agentConfig.Label); err != nil {
+		logging.Debug("failed while loading plist:", err.Error())
+		return err
+	}
+	// restart agent
+	if err := launchd.RestartAgent(agentConfig.Label); err != nil {
+		logging.Debugf("failed while restarting plist: %s", err.Error())
+		return err
 	}
 	return nil
 }
