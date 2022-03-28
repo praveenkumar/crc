@@ -31,6 +31,7 @@ require (
 	github.com/h2non/filetype v1.1.2-0.20210917125640-7fafb18134ff
 	github.com/hectane/go-acl v0.0.0-20190604041725-da78bae5fc95
 	github.com/jinzhu/copier v0.3.2
+	github.com/kardianos/service v1.2.1
 	github.com/klauspost/compress v1.13.6
 	github.com/klauspost/cpuid/v2 v2.0.9
 	github.com/kofalt/go-memoize v0.0.0-20210721235729-46a601ff34b8

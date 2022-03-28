@@ -9,6 +9,7 @@ import (
 	"github.com/code-ready/crc/pkg/crc/logging"
 	"github.com/containers/gvisor-tap-vsock/pkg/transport"
 
+	"github.com/containers/gvisor-tap-vsock/pkg/types"
 	"github.com/coreos/go-systemd/v22/activation"
 	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/mdlayher/vsock"
@@ -130,4 +131,8 @@ func daemonNotRunningMessage() string {
 
 func startupDone() {
 	_, _ = daemon.SdNotify(false, daemon.SdNotifyReady)
+}
+
+func runService(config *types.Configuration) error {
+	return nil
 }

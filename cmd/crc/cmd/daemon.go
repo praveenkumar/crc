@@ -19,7 +19,6 @@ import (
 	"github.com/code-ready/crc/pkg/crc/constants"
 	"github.com/code-ready/crc/pkg/crc/daemonclient"
 	"github.com/code-ready/crc/pkg/crc/logging"
-	"github.com/code-ready/crc/pkg/crc/preflight"
 	"github.com/containers/gvisor-tap-vsock/pkg/types"
 	"github.com/containers/gvisor-tap-vsock/pkg/virtualnetwork"
 	"github.com/docker/go-units"
@@ -27,7 +26,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/util/exec"
 )
 
 var watchdog bool
@@ -56,12 +54,12 @@ var daemonCmd = &cobra.Command{
 			return errors.New("daemon is already running")
 		}
 
-		if err := preflight.StartPreflightChecks(config); err != nil {
+		/*if err := preflight.StartPreflightChecks(config); err != nil {
 			return exec.CodeExitError{
 				Err:  err,
 				Code: preflightFailedExitCode,
 			}
-		}
+		}*/
 
 		virtualNetworkConfig := types.Configuration{
 			Debug:             false, // never log packets
@@ -117,6 +115,9 @@ var daemonCmd = &cobra.Command{
 			virtualNetworkConfig.NAT[hostVirtualIP] = "127.0.0.1"
 		}
 		virtualNetworkConfig.GatewayVirtualIPs = []string{hostVirtualIP}
+		if runtime.GOOS == "windows" {
+			return runService(&virtualNetworkConfig)
+		}
 		err := run(&virtualNetworkConfig)
 		return err
 	},

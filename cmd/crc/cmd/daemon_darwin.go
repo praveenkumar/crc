@@ -7,6 +7,7 @@ import (
 	"github.com/code-ready/crc/pkg/crc/constants"
 	"github.com/code-ready/crc/pkg/crc/logging"
 	crcversion "github.com/code-ready/crc/pkg/crc/version"
+	"github.com/containers/gvisor-tap-vsock/pkg/types"
 )
 
 func vsockListener() (net.Listener, error) {
@@ -41,4 +42,8 @@ func daemonNotRunningMessage() string {
 }
 
 func startupDone() {
+}
+
+func runService(config *types.Configuration) error {
+	return nil
 }
