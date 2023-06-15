@@ -1,0 +1,21 @@
+task:
+    # Basic metadata:
+    name: microshift test
+
+    # The build machine:
+    osx_instance:
+      image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
+    setup_script:
+      - brew install go
+      - go version
+    build_pkg_script:
+      - make NO_CODESIGN=1 out/macos-universal/crc-macos-installer.pkg
+    install_pkg_script:
+      - sudo installer -pkg out/macos-universal/crc-macos-installer.pkg -target /
+    run_crc_script:
+      - crc config set preset microshift
+      - echo '{"auths":{"quay.io":{"auth":"b3BlbnN","email":"dummy@dummy.com"}}}' > dummy_pull.json
+      - crc setup
+      - sleep 10
+      - crc start --pull-secret-file dummy_pull.json
+
