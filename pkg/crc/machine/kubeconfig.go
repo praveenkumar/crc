@@ -174,6 +174,12 @@ func addContext(cfg *api.Config, ip string, clusterConfig *types.ClusterConfig, 
 	if err != nil {
 		return err
 	}
+	apiServerURL, err := url.Parse(clusterConfig.ClusterAPI)
+	if err != nil {
+		return err
+	}
+	apiServerHost := strings.ReplaceAll(apiServerURL.Host, ".", "-")
+	username = fmt.Sprintf("%s/%s", username, apiServerHost)
 	cfg.AuthInfos[username] = &api.AuthInfo{
 		Token: token,
 	}
