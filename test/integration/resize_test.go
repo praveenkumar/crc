@@ -2,14 +2,20 @@ package test_test
 
 import (
 	"os/exec"
+	"regexp"
 	"runtime"
+	"strconv"
 
+	"github.com/crc-org/crc/v2/pkg/crc/constants"
+	"github.com/crc-org/crc/v2/pkg/crc/preset"
 	"github.com/crc-org/crc/v2/test/extended/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("vary VM parameters: memory cpus, disk", Serial, Ordered, Label("openshift-preset", "vm-resize"), func() {
+
+	defaultMemory := constants.GetDefaultMemory(preset.OpenShift)
 
 	// runs 1x after all the It blocks (specs) inside this Describe node
 	AfterAll(func() {
@@ -23,7 +29,7 @@ var _ = Describe("vary VM parameters: memory cpus, disk", Serial, Ordered, Label
 
 	})
 
-	Describe("use default values", Serial, Ordered, func() {
+	Describe("use custom values (1)", Serial, Ordered, func() {
 
 		It("setup CRC", func() {
 			if bundlePath == "" {
@@ -34,7 +40,6 @@ var _ = Describe("vary VM parameters: memory cpus, disk", Serial, Ordered, Label
 		})
 
 		It("start CRC", func() {
-			// default values: "--memory", "10752", "--cpus", "4", "disk-size", "31"
 			if bundlePath == "" {
 				Expect(RunCRCExpectSuccess("start", "--memory", "12000", "--cpus", "5", "--disk-size", "40", "-p", pullSecretPath)).To(ContainSubstring("Started the OpenShift cluster"))
 			} else {
@@ -86,7 +91,7 @@ var _ = Describe("vary VM parameters: memory cpus, disk", Serial, Ordered, Label
 
 	})
 
-	Describe("use custom values", Serial, Ordered, func() {
+	Describe("use custom values (2)", Serial, Ordered, func() {
 
 		It("start CRC", func() {
 			Expect(RunCRCExpectSuccess("start", "--memory", "13000", "--cpus", "6", "--disk-size", "50")).To(ContainSubstring("Started the OpenShift cluster"))
@@ -119,7 +124,7 @@ var _ = Describe("vary VM parameters: memory cpus, disk", Serial, Ordered, Label
 	Describe("use flawed values", Serial, Ordered, func() {
 
 		It("start CRC with sub-minimum memory", func() { // less than min = 10752
-			Expect(RunCRCExpectFail("start", "--memory", "9000")).To(ContainSubstring("requires memory in MiB >= 10752"))
+			Expect(RunCRCExpectFail("start", "--memory", "10000")).To(ContainSubstring("requires memory in MiB >= 10752"))
 		})
 		It("start CRC with sub-minimum cpus", func() { // fewer than min
 			Expect(RunCRCExpectFail("start", "--cpus", "3")).To(ContainSubstring("requires CPUs >= 4"))
@@ -145,7 +150,8 @@ var _ = Describe("vary VM parameters: memory cpus, disk", Serial, Ordered, Label
 		It("check VM's memory size", func() {
 			out, err := util.SendCommandToVM("cat /proc/meminfo")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(out).Should(MatchRegexp(`MemTotal:[\s]*9\d{6}`)) // there should be a check if cluster needs >10752MiB; it isn't there and mem gets scaled down regardless
+			regexpStr := `MemTotal:[\s]*` + regexp.QuoteMeta(strconv.Itoa(defaultMemory)[0:2]) + `\d{6}`
+			Expect(out).Should(MatchRegexp(regexpStr)) // there should be a check if cluster needs >defaultMemory MiB; it isn't there and mem gets scaled down regardless
 		})
 
 		It("check VM's number of cpus", func() {
