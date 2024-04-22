@@ -21,6 +21,13 @@ func ValidateBool(value interface{}) (bool, string) {
 	return true, ""
 }
 
+func validateStringSlice(value interface{}) (bool, string) {
+	if _, err := cast.ToStringSliceE(value); err != nil {
+		return false, "must be a valid string slice"
+	}
+	return true, ""
+}
+
 func validateString(value interface{}) (bool, string) {
 	if _, err := cast.ToStringE(value); err != nil {
 		return false, "must be a valid string"
@@ -151,4 +158,26 @@ func validatePort(value interface{}) (bool, string) {
 		return false, fmt.Sprintf("Provided %d but requires value in range of 1024-65535", port)
 	}
 	return true, ""
+}
+
+func validateCapabilites(value interface{}) (bool, string) {
+	// https://docs.openshift.com/container-platform/4.15/post_installation_configuration/enabling-cluster-capabilities.html
+	validCapabilities := []string{"MachineAPI", "marketplace", "OperatorLifecycleManager", "openshift-samples", "Console", "Insights", "Storage", "CSISnapshot", "NodeTuning", "ImageRegistry", "CloudCredential", "DeploymentConfig"}
+	userProvidedCapabilies := strings.Split(cast.ToString(value), ",")
+	for _, cap := range userProvidedCapabilies {
+		cap = strings.TrimSpace(cap)
+		if !checkIfValidCapability(cap, validCapabilities) {
+			return false, fmt.Sprintf("%s is not in valid capability list %s", cap, validCapabilities)
+		}
+	}
+	return true, ""
+}
+
+func checkIfValidCapability(cap string, validCapabilities []string) bool {
+	for _, vcap := range validCapabilities {
+		if cap == vcap {
+			return true
+		}
+	}
+	return false
 }

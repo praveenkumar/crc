@@ -510,3 +510,21 @@ func DeleteMCOLeaderLease(ctx context.Context, ocConfig oc.Config) error {
 	_, _, err := ocConfig.RunOcCommand("delete", "-A", "lease", "--all")
 	return err
 }
+
+func UpdateCapabilities(ctx context.Context, ocConfig oc.Config, capabilities []string) error {
+	if err := WaitForOpenshiftResource(ctx, ocConfig, "clusterversion"); err != nil {
+		return err
+	}
+	capabilities = append(capabilities, "Console", "ImageRegistry")
+	capString := strings.Join(capabilities, `", "`)
+	updateCapabilities := func() error {
+		cmdArgs := []string{"patch", "clusterversion/version", "--type", "merge", "-p", fmt.Sprintf(`'{"spec":{"capabilities":{"additionalEnabledCapabilities":["%s"]}}}'`, capString)}
+		logging.Debugf("Capabilies cmdArgs %s", cmdArgs)
+		_, stderr, err := ocConfig.WithFailFast().RunOcCommand(cmdArgs...)
+		if err != nil {
+			return &errors.RetriableError{Err: fmt.Errorf("failed to update capability %v: %s", err, stderr)}
+		}
+		return nil
+	}
+	return errors.Retry(ctx, 60*time.Second, updateCapabilities, time.Second)
+}

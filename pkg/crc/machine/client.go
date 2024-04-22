@@ -2,6 +2,7 @@ package machine
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	crcConfig "github.com/crc-org/crc/v2/pkg/crc/config"
@@ -66,4 +67,12 @@ func (client *client) networkMode() network.Mode {
 
 func (client *client) monitoringEnabled() bool {
 	return client.config.Get(crcConfig.EnableClusterMonitoring).AsBool()
+}
+
+func (client *client) getEnabledCapabilites() []string {
+	cap := strings.Split(client.config.Get(crcConfig.EnabledCapabilities).AsString(), ",")
+	for i := range cap {
+		cap[i] = strings.TrimSpace(cap[i])
+	}
+	return cap
 }

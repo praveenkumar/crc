@@ -37,6 +37,7 @@ const (
 	EmergencyLogin           = "enable-emergency-login"
 	PersistentVolumeSize     = "persistent-volume-size"
 	EnableBundleQuayFallback = "enable-bundle-quay-fallback"
+	EnabledCapabilities      = "enabled-capabilities"
 )
 
 func RegisterSettings(cfg *Config) {
@@ -141,6 +142,9 @@ func RegisterSettings(cfg *Config) {
 
 	cfg.AddSetting(EnableBundleQuayFallback, false, ValidateBool, SuccessfullyApplied,
 		"If bundle download from the default location fails, fallback to quay.io (true/false, default: false)")
+
+	cfg.AddSetting(EnabledCapabilities, "openshift-samples, marketplace, DeploymentConfig, OperatorLifecycleManager", validateCapabilites, SuccessfullyApplied,
+		"Comma-separated list of capabilities to enable in the cluster (e.g. 'openshift-samples, marketplace'), https://docs.openshift.com/container-platform/latest/installing/cluster-capabilities.html")
 
 	if err := cfg.RegisterNotifier(Preset, presetChanged); err != nil {
 		logging.Debugf("Failed to register notifier for Preset: %v", err)

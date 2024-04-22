@@ -602,6 +602,10 @@ func (client *client) Start(ctx context.Context, startConfig types.StartConfig) 
 		return nil, errors.Wrap(err, "Error waiting for apiserver")
 	}
 
+	if err := cluster.UpdateCapabilities(ctx, ocConfig, client.getEnabledCapabilites()); err != nil {
+		return nil, errors.Wrap(err, "Error updating capabilities")
+	}
+
 	if err := ensureProxyIsConfiguredInOpenShift(ctx, ocConfig, sshRunner, proxyConfig); err != nil {
 		return nil, errors.Wrap(err, "Failed to update cluster proxy configuration")
 	}
