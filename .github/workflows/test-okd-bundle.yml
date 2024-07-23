@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Run OKD bundle with crc
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -28,11 +28,16 @@ jobs:
         run: |
           make cross
           sudo cp out/linux-amd64/crc /usr/local/bin/crc
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Install required virtualization software
         run: |
           sudo apt-get update
-          sudo apt install qemu-kvm libvirt-daemon libvirt-daemon-system
-          sudo usermod -a -G libvirt $USER
+          sudo apt install qemu-kvm libvirt-daemon libvirt-daemon-system virtiofsd
+          sudo usermod -a -G kvm,libvirt $USER
       - name: Remove unwanted stuff to free up disk image
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -49,6 +54,8 @@ jobs:
         run: |
           crc config set preset okd
           crc config set network-mode user
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Setup the crc
         run: sudo -su $USER crc setup
       - name: Start the crc
