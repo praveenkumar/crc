@@ -17,7 +17,7 @@ image:https://github.com/crc-org/crc/actions/workflows/make-check-win.yml/badge.
 `crc` is a tool to run containers.
 It manages a local https://github.com/openshift/origin[OpenShift 4.x] cluster, or an https://github.com/openshift/okd[OKD] cluster VM optimized for testing and development purposes.
 
-If you are looking for a solution for running OpenShift 3.x, you will need tools such as `oc cluster up`, http://github.com/minishift/minishift[Minishift] or https://developers.redhat.com/products/cdk/overview/[CDK].
+If you looking for a solution for running OpenShift 3.x, you will need tools such as `oc cluster up`, http://github.com/minishift/minishift[Minishift] or https://developers.redhat.com/products/cdk/overview/[CDK].
 
 [[usage-data]]
 == Usage data
