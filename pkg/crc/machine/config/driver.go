@@ -4,8 +4,8 @@ import (
 	"github.com/crc-org/machine/libmachine/drivers"
 )
 
-func ConvertGiBToBytes(gib int) uint64 {
-	return uint64(gib) * 1024 * 1024 * 1024
+func ConvertGiBToBytes(gib uint64) uint64 {
+	return gib * 1024 * 1024 * 1024
 }
 
 func InitVMDriverFromMachineConfig(machineConfig MachineConfig, driver *drivers.VMDriver) {

@@ -8,9 +8,9 @@ type MachineConfig struct {
 
 	// Virtual machine configuration
 	Name              string
-	Memory            int
-	CPUs              int
-	DiskSize          int
+	Memory            uint
+	CPUs              uint
+	DiskSize          uint64
 	ImageSourcePath   string
 	ImageFormat       string
 	SSHKeyPath        string

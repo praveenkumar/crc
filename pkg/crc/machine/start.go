@@ -265,8 +265,8 @@ func configureSharedDirs(vm *virtualMachine, sshRunner *crcssh.Runner) error {
 
 func (client *client) Start(ctx context.Context, startConfig types.StartConfig) (*types.StartResult, error) {
 	telemetry.SetCPUs(ctx, startConfig.CPUs)
-	telemetry.SetMemory(ctx, uint64(startConfig.Memory)*1024*1024)
-	telemetry.SetDiskSize(ctx, uint64(startConfig.DiskSize)*1024*1024*1024)
+	telemetry.SetMemory(ctx, startConfig.Memory*1024*1024)
+	telemetry.SetDiskSize(ctx, startConfig.DiskSize*1024*1024*1024)
 
 	if err := client.validateStartConfig(startConfig); err != nil {
 		return nil, err

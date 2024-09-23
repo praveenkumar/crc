@@ -61,11 +61,11 @@ func setContextProperty(ctx context.Context, key string, value interface{}) {
 	}
 }
 
-func SetCPUs(ctx context.Context, value int) {
+func SetCPUs(ctx context.Context, value uint) {
 	setContextProperty(ctx, "cpus", value)
 }
 
-func SetMemory(ctx context.Context, value uint64) {
+func SetMemory(ctx context.Context, value uint) {
 	setContextProperty(ctx, "memory", value)
 }
 

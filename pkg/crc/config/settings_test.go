@@ -16,7 +16,7 @@ import (
 
 // override for ValidateMemory in validations.go to disable the physical memory check
 func validateMemoryNoPhysicalCheck(value interface{}, preset crcpreset.Preset) (bool, string) {
-	v, err := cast.ToIntE(value)
+	v, err := cast.ToUintE(value)
 	if err != nil {
 		return false, fmt.Sprintf("requires integer value in MiB >= %d", constants.GetDefaultMemory(preset))
 	}
