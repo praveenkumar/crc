@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -67,32 +66,33 @@ func detect() (string, error) {
 		if err != nil {
 			return "cmd", err // defaulting to cmd
 		}
-		switch {
-		case strings.Contains(strings.ToLower(shell), "powershell"):
-			return "powershell", nil
-		case strings.Contains(strings.ToLower(shell), "pwsh"):
-			return "powershell", nil
-		case strings.Contains(strings.ToLower(shell), "cmd"):
-			return "cmd", nil
-		default:
+		shellTypeResult := shellType(shell)
+		if shellTypeResult == "cmd" {
 			shell, _, err := getNameAndItsPpid(shellppid)
 			if err != nil {
 				return "cmd", err // defaulting to cmd
 			}
-			switch {
-			case strings.Contains(strings.ToLower(shell), "powershell"):
-				return "powershell", nil
-			case strings.Contains(strings.ToLower(shell), "cmd"):
-				return "cmd", nil
-			default:
-				return "cmd", nil // this could be either powershell or cmd, defaulting to cmd
-			}
+			return shellType(shell), nil
 		}
+		return shellTypeResult, nil
 	}
 
 	if os.Getenv("__fish_bin_dir") != "" {
 		return "fish", nil
 	}
 
-	return filepath.Base(shell), nil
+	return shellType(shell), nil
+}
+
+func shellType(shell string) string {
+	switch {
+	case strings.Contains(strings.ToLower(shell), "powershell"):
+		return "powershell"
+	case strings.Contains(strings.ToLower(shell), "pwsh"):
+		return "powershell"
+	case strings.Contains(strings.ToLower(shell), "cmd"):
+		return "cmd"
+	default:
+		return "cmd" // this could be either powershell or cmd, defaulting to cmd
+	}
 }
