@@ -36,8 +36,8 @@ var _ = Describe("", Serial, Ordered, Label("openshift-preset", "goproxy"), func
 
 	Describe("Behind proxy", Serial, Ordered, func() {
 
-		httpProxy := "http://127.0.0.1:8888"
-		httpsProxy := "http://127.0.0.1:8888"
+		httpProxy := "http://host.crc.testing:8888"
+		httpsProxy := "http://host.crc.testing:8888"
 		noProxy := ".testing"
 
 		// Start goproxy
